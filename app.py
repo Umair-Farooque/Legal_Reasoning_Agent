@@ -8,16 +8,11 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from rank_bm25 import BM25Okapi
-from dotenv import load_dotenv
 from openai import OpenAI
 
-# ------------------- Load Environment -------------------
-load_dotenv()
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found in .env file")
-
-client = OpenAI(api_key=api_key)
+# ------------------- OpenAI Client -------------------
+# Make sure OPENAI_API_KEY is set in Render environment variables
+client = OpenAI()  # Automatically reads OPENAI_API_KEY from environment
 
 # ------------------- FastAPI App -------------------
 app = FastAPI()
@@ -39,16 +34,17 @@ texts = [row["text"] for row in metadata_dicts]
 bm25 = BM25Okapi([t.split() for t in texts])
 
 # ------------------- Query Decomposition -------------------
-def decompose_query(query):
+def decompose_query(query: str):
     return [q.strip() for q in query.replace(";", ",").split(",") if q.strip()]
 
 # ------------------- Retrieval with RAG Fusion -------------------
-def retrieve_candidates(query, top_k=5):
+def retrieve_candidates(query: str, top_k: int = 5):
     candidate_indices = set()
     for subq in decompose_query(query):
         # BM25
         bm25_scores = bm25.get_scores(subq.split())
         bm25_top = np.argsort(bm25_scores)[::-1][:top_k]
+
         # Dense embedding
         q_emb = client.embeddings.create(
             model="text-embedding-3-large",
@@ -56,12 +52,14 @@ def retrieve_candidates(query, top_k=5):
         ).data[0].embedding
         q_emb = np.array(q_emb, dtype="float32").reshape(1, -1)
         _, I = index.search(q_emb, top_k)
+
         for idx in set(bm25_top).union(I[0]):
             candidate_indices.add(idx)
+
     return [metadata_dicts[i] for i in candidate_indices]
 
 # ------------------- Legal Prompt Template -------------------
-def build_legal_prompt(query, retrieved_chunks):
+def build_legal_prompt(query: str, retrieved_chunks: list):
     context = "\n\n".join([
         f"Section {c['section_number']} ({c['section_title']}): {c['text']}"
         for c in retrieved_chunks
@@ -80,10 +78,11 @@ Answer in a professional legal manner, citing relevant sections wherever applica
     return prompt
 
 # ------------------- Generate Answer -------------------
-def generate_answer(query):
+def generate_answer(query: str):
     candidates = retrieve_candidates(query, top_k=5)
     if not candidates:
         return "No relevant sections found in the Constitution."
+    
     prompt = build_legal_prompt(query, candidates)
     response = client.chat.completions.create(
         model="gpt-4o-mini",
