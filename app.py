@@ -7,11 +7,13 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from rank_bm25 import BM25Okapi
-from openai import OpenAI  # ✅ new SDK
+import openai  # ✅ legacy SDK
 
-# ------------------- OpenAI Client -------------------
+# ------------------- OpenAI API Key -------------------
 # Make sure OPENAI_API_KEY is set in Render environment variables
-client = OpenAI()  # ✅ auto-picks up OPENAI_API_KEY from env
+openai.api_key = os.getenv("OPENAI_API_KEY")
+if not openai.api_key:
+    raise ValueError("❌ OPENAI_API_KEY not found in environment")
 
 # ------------------- FastAPI App -------------------
 app = FastAPI()
@@ -45,10 +47,10 @@ def retrieve_candidates(query: str, top_k: int = 5):
         bm25_top = np.argsort(bm25_scores)[::-1][:top_k]
 
         # Dense embedding
-        q_emb = client.embeddings.create(
+        q_emb = openai.Embedding.create(
             model="text-embedding-3-large",
             input=subq
-        ).data[0].embedding
+        )["data"][0]["embedding"]
         q_emb = np.array(q_emb, dtype="float32").reshape(1, -1)
         _, I = index.search(q_emb, top_k)
 
@@ -83,12 +85,12 @@ def generate_answer(query: str):
         return "No relevant sections found in the Constitution of Pakistan."
     
     prompt = build_legal_prompt(query, candidates)
-    response = client.chat.completions.create(
+    response = openai.ChatCompletion.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
     )
-    return response.choices[0].message.content
+    return response["choices"][0]["message"]["content"]
 
 # ------------------- Routes -------------------
 @app.get("/", response_class=HTMLResponse)
