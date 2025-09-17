@@ -32,7 +32,7 @@ app/
 ### 1. Clone the repository
 
 ```bash
-git clone [<your-repo-url>](https://github.com/Umair-Farooque/Legal_Reasoning_Agent.git)
+git clone https://github.com/Umair-Farooque/Legal_Reasoning_Agent.git
 ```
 
 ### 2. Set environment variables
