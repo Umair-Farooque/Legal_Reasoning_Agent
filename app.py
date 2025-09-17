@@ -8,11 +8,14 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from rank_bm25 import BM25Okapi
-from openai import OpenAI
+import openai  # Use global openai module instead of OpenAI class
 
 # ------------------- OpenAI Client -------------------
 # Make sure OPENAI_API_KEY is set in Render environment variables
-client = OpenAI()  # Automatically reads OPENAI_API_KEY from environment
+api_key = os.getenv("OPENAI_API_KEY")
+if not api_key:
+    raise ValueError("OPENAI_API_KEY not found in environment")
+openai.api_key = api_key
 
 # ------------------- FastAPI App -------------------
 app = FastAPI()
@@ -46,7 +49,7 @@ def retrieve_candidates(query: str, top_k: int = 5):
         bm25_top = np.argsort(bm25_scores)[::-1][:top_k]
 
         # Dense embedding
-        q_emb = client.embeddings.create(
+        q_emb = openai.embeddings.create(
             model="text-embedding-3-large",
             input=subq
         ).data[0].embedding
@@ -84,7 +87,7 @@ def generate_answer(query: str):
         return "No relevant sections found in the Constitution."
     
     prompt = build_legal_prompt(query, candidates)
-    response = client.chat.completions.create(
+    response = openai.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
@@ -101,6 +104,3 @@ def ask(query: str = Form(...)):
     answer = generate_answer(query)
     return {"query": query, "answer": answer}
 
-# ------------------- Run locally -------------------
-if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
