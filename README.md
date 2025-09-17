@@ -1,7 +1,6 @@
 # Legal Reasoning Agent (RAG) Project
-
-**Legal Reasoning Agent** is an AI-powered system that provides structured, professional legal answers based on the **Pakistan Constitution**. It combines **BM25 keyword search**, **dense embeddings with FAISS**, and **OpenAI GPT-4o-mini** for reasoning and context-aware responses.
 ---
+**Legal Reasoning Agent** is an AI-powered system that provides structured, professional legal answers based on the **Pakistan Constitution**. It combines **BM25 keyword search**, **dense embeddings with FAISS**, and **OpenAI GPT-4o-mini** for reasoning and context-aware responses.
 
 ## Features
 
