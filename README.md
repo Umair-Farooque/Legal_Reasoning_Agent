@@ -1,7 +1,6 @@
 # Legal Reasoning Agent (RAG) Project
-
-**Legal Reasoning Agent** is an AI-powered system that provides structured, professional legal answers based on the **Pakistan Constitution**. It combines **BM25 keyword search**, **dense embeddings with FAISS**, and **OpenAI GPT-4o-mini** for reasoning and context-aware responses.
 ---
+**Legal Reasoning Agent** is an AI-powered system that provides structured, professional legal answers based on the **Pakistan Constitution**. It combines **BM25 keyword search**, **dense embeddings with FAISS**, and **OpenAI GPT-4o-mini** for reasoning and context-aware responses.
 
 ## Features
 
@@ -33,8 +32,7 @@ app/
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
-cd <repo-folder>
+git clone https://github.com/Umair-Farooque/Legal_Reasoning_Agent.git
 ```
 
 ### 2. Set environment variables
