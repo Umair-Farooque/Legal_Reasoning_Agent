@@ -8,14 +8,11 @@ from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from rank_bm25 import BM25Okapi
-import openai  # Use global openai module instead of OpenAI class
+from openai import OpenAI  # ✅ Use the new OpenAI client
 
 # ------------------- OpenAI Client -------------------
-# Make sure OPENAI_API_KEY is set in Render environment variables
-api_key = os.getenv("OPENAI_API_KEY")
-if not api_key:
-    raise ValueError("OPENAI_API_KEY not found in environment")
-openai.api_key = api_key
+# Render should have OPENAI_API_KEY set in environment variables
+client = OpenAI()  # ✅ new client automatically picks up env var
 
 # ------------------- FastAPI App -------------------
 app = FastAPI()
@@ -48,8 +45,8 @@ def retrieve_candidates(query: str, top_k: int = 5):
         bm25_scores = bm25.get_scores(subq.split())
         bm25_top = np.argsort(bm25_scores)[::-1][:top_k]
 
-        # Dense embedding
-        q_emb = openai.embeddings.create(
+        # Dense embedding (✅ use new client)
+        q_emb = client.embeddings.create(
             model="text-embedding-3-large",
             input=subq
         ).data[0].embedding
@@ -68,12 +65,12 @@ def build_legal_prompt(query: str, retrieved_chunks: list):
         for c in retrieved_chunks
     ])
     prompt = f"""
-You are a legal reasoning assistant. Use only the provided constitutional text.
+You are a legal reasoning assistant. Use only the provided constitutional text of Pakistan.
 Answer the query strictly using legal terminology and citations.
 
 Query: {query}
 
-Relevant sections from the Constitution:
+Relevant sections from the Constitution of Pakistan:
 {context}
 
 Answer in a professional legal manner, citing relevant sections wherever applicable:
@@ -87,7 +84,7 @@ def generate_answer(query: str):
         return "No relevant sections found in the Constitution."
     
     prompt = build_legal_prompt(query, candidates)
-    response = openai.chat.completions.create(
+    response = client.chat.completions.create(   # ✅ use new client
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
@@ -103,4 +100,3 @@ def home(request: Request):
 def ask(query: str = Form(...)):
     answer = generate_answer(query)
     return {"query": query, "answer": answer}
-
