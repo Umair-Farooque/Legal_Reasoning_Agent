@@ -2,17 +2,16 @@ import os
 import faiss
 import numpy as np
 import pandas as pd
-import uvicorn
 from fastapi import FastAPI, Request, Form
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from rank_bm25 import BM25Okapi
-from openai import OpenAI  # ✅ Use the new OpenAI client
+from openai import OpenAI  # ✅ new SDK
 
 # ------------------- OpenAI Client -------------------
-# Render should have OPENAI_API_KEY set in environment variables
-client = OpenAI()  # ✅ new client automatically picks up env var
+# Make sure OPENAI_API_KEY is set in Render environment variables
+client = OpenAI()  # ✅ auto-picks up OPENAI_API_KEY from env
 
 # ------------------- FastAPI App -------------------
 app = FastAPI()
@@ -45,7 +44,7 @@ def retrieve_candidates(query: str, top_k: int = 5):
         bm25_scores = bm25.get_scores(subq.split())
         bm25_top = np.argsort(bm25_scores)[::-1][:top_k]
 
-        # Dense embedding (✅ use new client)
+        # Dense embedding
         q_emb = client.embeddings.create(
             model="text-embedding-3-large",
             input=subq
@@ -65,12 +64,12 @@ def build_legal_prompt(query: str, retrieved_chunks: list):
         for c in retrieved_chunks
     ])
     prompt = f"""
-You are a legal reasoning assistant. Use only the provided constitutional text of Pakistan.
+You are a legal reasoning assistant. Use only the provided constitutional text from the Constitution of Pakistan.
 Answer the query strictly using legal terminology and citations.
 
 Query: {query}
 
-Relevant sections from the Constitution of Pakistan:
+Relevant sections from the Constitution:
 {context}
 
 Answer in a professional legal manner, citing relevant sections wherever applicable:
@@ -81,10 +80,10 @@ Answer in a professional legal manner, citing relevant sections wherever applica
 def generate_answer(query: str):
     candidates = retrieve_candidates(query, top_k=5)
     if not candidates:
-        return "No relevant sections found in the Constitution."
+        return "No relevant sections found in the Constitution of Pakistan."
     
     prompt = build_legal_prompt(query, candidates)
-    response = client.chat.completions.create(   # ✅ use new client
+    response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[{"role": "user", "content": prompt}],
         temperature=0
