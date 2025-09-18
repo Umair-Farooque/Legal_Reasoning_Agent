@@ -1,23 +1,75 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Legal Reasoning Agent</title>
-    <!-- Link external CSS -->
-    <link rel="stylesheet" href="/static/styles.css">
+  <meta charset="UTF-8">
+  <title>Legal Reasoning Agent</title>
+  <link rel="stylesheet" href="/static/styles.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <h1>Legal Reasoning Agent</h1>
-        <form id="query-form">
-            <textarea id="query" placeholder="Enter your legal query..."></textarea><br>
-            <button type="submit">Ask</button>
-        </form>
-        <h2>Answer:</h2>
-        <pre id="answer"></pre>
-    </div>
+  <!-- Home Page -->
+  <div id="home" class="page active">
+    <header class="hero">
+      <h1>⚖️ Legal Reasoning Agent</h1>
+      <p class="tagline">AI-powered legal assistant for citizens, students, lawyers, and researchers</p>
+      <button id="start-chat" class="primary-btn">Chat with Agent</button>
+    </header>
 
-    <!-- Link external JS -->
-    <script src="/static/script.js"></script>
+    <!-- Audience sections -->
+    <section class="audience">
+      <h2>👩‍⚖️ End Users (Citizens, Students, Lawyers, Researchers)</h2>
+      <ul>
+        <li><strong>Ask Questions in Natural Language:</strong> Type legal or constitutional questions in plain English/Urdu.</li>
+        <li><strong>Receive Constitution-Based Answers:</strong> The system finds the most relevant sections and provides a professional explanation with citations.</li>
+        <li><strong>Transparent Citations:</strong> Every answer cites exact sections for verification.</li>
+      </ul>
+    </section>
+
+    <section class="audience">
+      <h2>📚 Law Students & Researchers</h2>
+      <ul>
+        <li><strong>Study Aid:</strong> Get simplified explanations instead of reading the entire Constitution.</li>
+        <li><strong>Cross-Section References:</strong> Explore multiple related clauses together.</li>
+        <li><strong>Reliable Source:</strong> Only uses the Constitution of Pakistan, avoiding hallucinated answers.</li>
+      </ul>
+    </section>
+
+    <section class="audience">
+      <h2>⚖️ Lawyers & Legal Professionals</h2>
+      <ul>
+        <li><strong>Quick Legal Lookup:</strong> Instantly retrieve constitutional articles related to client cases.</li>
+        <li><strong>Argument Support:</strong> Use citations in professional reasoning.</li>
+        <li><strong>Draft Aid:</strong> Quickly check whether an article supports or limits a claim.</li>
+      </ul>
+    </section>
+
+    <section class="audience">
+      <h2>🌐 General Public</h2>
+      <ul>
+        <li><strong>Know Your Rights:</strong> Query the Constitution without legal training.</li>
+        <li><strong>Accessible Language:</strong> Clear explanations in professional style but easier to understand.</li>
+        <li><strong>Trustworthy Information:</strong> Always based strictly on the Constitution of Pakistan.</li>
+      </ul>
+    </section>
+  </div> <!-- ✅ properly closed home page -->
+
+  <!-- Chat Page -->
+  <div id="chat" class="page">
+    <header class="chat-header">
+      <h2>⚖️ Legal Reasoning Agent</h2>
+      <p class="subtitle-chat">Ask constitutional questions and get AI-powered answers with citations</p>
+      <button id="back-home" class="secondary-btn">← Back to Home</button>
+
+    </header>
+    <div class="chat-container themed-chat">
+      <div id="chat-window" class="chat-window"></div>
+      <form id="query-form" class="chat-input-area">
+        <textarea id="query" placeholder="Enter your legal query..."></textarea>
+        <button type="submit">Ask</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/script.js"></script>
 </body>
 </html>
