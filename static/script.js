@@ -35,6 +35,7 @@ const chatWindow = document.getElementById("chat-window");
 const queryForm = document.getElementById("query-form");
 const queryInput = document.getElementById("query");
 
+// Add message for user
 function addMessage(text, sender, citation = null) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
@@ -49,15 +50,70 @@ function addMessage(text, sender, citation = null) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
+// Smooth scrolling utility
+function scrollChatToBottom() {
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Helper: type a single element character by character
+async function typeElementCharByChar(element) {
+  const text = element.textContent;
+  element.textContent = "";
+  for (let i = 0; i < text.length; i++) {
+    element.textContent += text[i];
+    scrollChatToBottom();
+    await new Promise(res => setTimeout(res, 10));
+  }
+}
+
+// Helper: format AI text with paragraphs, bold sections, and bullets
+function formatAnswerText(text) {
+  const container = document.createElement("div");
+  const paragraphs = text.split(/\n{2,}/); // split by double newlines
+
+  paragraphs.forEach(para => {
+    const sections = para.match(/(Article|Section)\s*\d+/gi);
+    if (sections && sections.length > 1) {
+      const ul = document.createElement("ul");
+      sections.forEach(sec => {
+        const li = document.createElement("li");
+        li.innerHTML = para.replace(sec, `<strong>${sec}</strong>`);
+        li.style.marginBottom = "6px";
+        ul.appendChild(li);
+      });
+      container.appendChild(ul);
+    } else {
+      const p = document.createElement("p");
+      p.innerHTML = para.replace(/(Article|Section)\s*\d+/gi, match => `<strong>${match}</strong>`);
+      p.style.textIndent = "20px";
+      p.style.marginBottom = "12px";
+      container.appendChild(p);
+    }
+  });
+
+  return container;
+}
+
+// Type AI answer with formatting
 async function typeMessage(text, sender, citation = null) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   chatWindow.appendChild(msg);
 
-  for (let i = 0; i < text.length; i++) {
-    msg.textContent += text[i];
-    chatWindow.scrollTop = chatWindow.scrollHeight; // ensures scroll follows typing
-    await new Promise(res => setTimeout(res, 15));
+  const formattedContainer = formatAnswerText(text);
+  const children = Array.from(formattedContainer.children);
+
+  for (let el of children) {
+    msg.appendChild(el);
+    // Type character by character for paragraphs and bullet items
+    if (el.tagName === "P") {
+      await typeElementCharByChar(el);
+    } else if (el.tagName === "UL") {
+      for (let li of el.children) {
+        await typeElementCharByChar(li);
+      }
+    }
+    scrollChatToBottom();
   }
 
   if (citation) {
@@ -66,12 +122,8 @@ async function typeMessage(text, sender, citation = null) {
     cite.textContent = `📖 Cited: ${citation}`;
     msg.appendChild(cite);
   }
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
 
-// Smooth scrolling utility for chat window
-function scrollChatToBottom() {
-  chatWindow.scrollTop = chatWindow.scrollHeight;
+  scrollChatToBottom();
 }
 
 // Handle form submit with FastAPI call
