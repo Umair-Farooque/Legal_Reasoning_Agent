@@ -56,7 +56,7 @@ async function typeMessage(text, sender, citation = null) {
 
   for (let i = 0; i < text.length; i++) {
     msg.textContent += text[i];
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    chatWindow.scrollTop = chatWindow.scrollHeight; // ensures scroll follows typing
     await new Promise(res => setTimeout(res, 15));
   }
 
@@ -66,6 +66,11 @@ async function typeMessage(text, sender, citation = null) {
     cite.textContent = `📖 Cited: ${citation}`;
     msg.appendChild(cite);
   }
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Smooth scrolling utility for chat window
+function scrollChatToBottom() {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
@@ -83,7 +88,7 @@ queryForm.addEventListener("submit", async (e) => {
   typingMsg.classList.add("message", "agent");
   typingMsg.textContent = "⏳ Generating response...";
   chatWindow.appendChild(typingMsg);
-  chatWindow.scrollTop = chatWindow.scrollHeight;
+  scrollChatToBottom();
 
   try {
     const formData = new FormData();
