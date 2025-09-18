@@ -35,7 +35,6 @@ const chatWindow = document.getElementById("chat-window");
 const queryForm = document.getElementById("query-form");
 const queryInput = document.getElementById("query");
 
-// Add message for user
 function addMessage(text, sender, citation = null) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
@@ -50,26 +49,10 @@ function addMessage(text, sender, citation = null) {
   chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
-// Smooth scrolling utility
-function scrollChatToBottom() {
-  chatWindow.scrollTop = chatWindow.scrollHeight;
-}
-
-// Helper: type a single element character by character
-async function typeElementCharByChar(element) {
-  const text = element.textContent;
-  element.textContent = "";
-  for (let i = 0; i < text.length; i++) {
-    element.textContent += text[i];
-    scrollChatToBottom();
-    await new Promise(res => setTimeout(res, 10));
-  }
-}
-
 // Helper: format AI text with paragraphs, bold sections, and bullets
 function formatAnswerText(text) {
   const container = document.createElement("div");
-  const paragraphs = text.split(/\n{2,}/); // split by double newlines
+  const paragraphs = text.split(/\n{2,}/); // split double-newline paragraphs
 
   paragraphs.forEach(para => {
     const sections = para.match(/(Article|Section)\s*\d+/gi);
@@ -94,27 +77,14 @@ function formatAnswerText(text) {
   return container;
 }
 
-// Type AI answer with formatting
 async function typeMessage(text, sender, citation = null) {
   const msg = document.createElement("div");
   msg.classList.add("message", sender);
   chatWindow.appendChild(msg);
 
+  // Append formatted AI text
   const formattedContainer = formatAnswerText(text);
-  const children = Array.from(formattedContainer.children);
-
-  for (let el of children) {
-    msg.appendChild(el);
-    // Type character by character for paragraphs and bullet items
-    if (el.tagName === "P") {
-      await typeElementCharByChar(el);
-    } else if (el.tagName === "UL") {
-      for (let li of el.children) {
-        await typeElementCharByChar(li);
-      }
-    }
-    scrollChatToBottom();
-  }
+  msg.appendChild(formattedContainer);
 
   if (citation) {
     const cite = document.createElement("div");
@@ -123,7 +93,12 @@ async function typeMessage(text, sender, citation = null) {
     msg.appendChild(cite);
   }
 
-  scrollChatToBottom();
+  chatWindow.scrollTop = chatWindow.scrollHeight;
+}
+
+// Smooth scrolling utility for chat window
+function scrollChatToBottom() {
+  chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 // Handle form submit with FastAPI call
@@ -154,7 +129,7 @@ queryForm.addEventListener("submit", async (e) => {
     const data = await res.json();
     typingMsg.remove();
 
-    // Support optional citations from backend
+    // Display formatted answer
     await typeMessage(data.answer || "⚠️ No answer generated.", "agent", data.citation || null);
 
   } catch (error) {
