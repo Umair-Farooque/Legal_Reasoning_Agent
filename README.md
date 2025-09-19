@@ -67,26 +67,10 @@ uvicorn app:app --host 0.0.0.0 --port $PORT
 ---
 
 ## Deployment (Render)
-
-1. Push your repository to GitHub.
-2. Connect your repository in Render as a Web Service.
-3. Use the following Dockerfile for production deployment:
-
-```dockerfile
-FROM python:3.11-slim
-WORKDIR /app
-RUN apt-get update && apt-get install -y --no-install-recommends build-essential git && rm -rf /var/lib/apt/lists/*
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --no-cache-dir -r requirements.txt
-COPY . .
-EXPOSE 8000
-CMD ["sh", "-c", "uvicorn app:app --host 0.0.0.0 --port ${PORT}"]
+```bash
+https://legal-reasoning-agent.onrender.com/
 ```
 
-4. Set the environment variable `OPENAI_API_KEY` in Render.
-5. Deploy and Render will automatically use the `PORT` variable for web binding.
-
----
 
 ## Usage
 
